@@ -153,6 +153,7 @@ public class DeviceOperations
      * @param requestId is an unique number that identify the request.
      * @param connectTimeout the http connect timeout to use
      * @param readTimeout the http read timeout to use
+     * @param proxy the proxy to use, or null if no proxy will be used
      * @return the result of the request.
      * @throws IotHubException This exception is thrown if the response verification failed
      * @throws IOException This exception is thrown if the IO operation failed
