@@ -13,6 +13,7 @@ import com.microsoft.azure.sdk.iot.service.transport.http.HttpRequest;
 import com.microsoft.azure.sdk.iot.service.transport.http.HttpResponse;
 
 import java.io.IOException;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.Map;
 
@@ -46,7 +47,9 @@ public class DeviceOperations
      * @return the result of the request.
      * @throws IotHubException This exception is thrown if the response verification failed
      * @throws IOException This exception is thrown if the IO operation failed
+     * @deprecated use {@link #request(IotHubConnectionString, URL, HttpMethod, byte[], String, int, int, Proxy)} instead
      */
+    @Deprecated
     public static HttpResponse request(
             IotHubConnectionString iotHubConnectionString, 
             URL url, 
@@ -137,6 +140,90 @@ public class DeviceOperations
         IotHubExceptionManager.httpResponseVerification(response);
         
         /* Codes_SRS_DEVICE_OPERATIONS_21_017: [If the resulted status represents success, the request shall return the http response.] */
+        return response;
+    }
+
+    /**
+     * Send a http request to the IoTHub using the Twin/Method standard, and return its response.
+     *
+     * @param iotHubConnectionString is the connection string for the IoTHub
+     * @param url is the Twin URL for the device ID.
+     * @param method is the HTTP method (GET, POST, DELETE, PATCH, PUT).
+     * @param payload is the array of bytes that contains the payload.
+     * @param requestId is an unique number that identify the request.
+     * @param connectTimeout the http connect timeout to use
+     * @param readTimeout the http read timeout to use
+     * @return the result of the request.
+     * @throws IotHubException This exception is thrown if the response verification failed
+     * @throws IOException This exception is thrown if the IO operation failed
+     */
+    public static HttpResponse request(
+            IotHubConnectionString iotHubConnectionString,
+            URL url,
+            HttpMethod method,
+            byte[] payload,
+            String requestId,
+            int connectTimeout,
+            int readTimeout,
+            Proxy proxy)
+            throws IOException, IotHubException, IllegalArgumentException
+    {
+        if (iotHubConnectionString == null)
+        {
+            throw new IllegalArgumentException("Null ConnectionString");
+        }
+
+        if (url == null)
+        {
+            throw new IllegalArgumentException("Null URL");
+        }
+
+        if (method == null)
+        {
+            throw new IllegalArgumentException("Null method");
+        }
+
+        String sasTokenString = new IotHubServiceSasToken(iotHubConnectionString).toString();
+        if((sasTokenString == null) || sasTokenString.isEmpty())
+        {
+            throw new IOException("Illegal sasToken null or empty");
+        }
+
+        HttpRequest request;
+        if (proxy != null)
+        {
+            request = new HttpRequest(url, method, payload, proxy);
+        }
+        else
+        {
+            request = new HttpRequest(url, method, payload);
+        }
+
+        request.setReadTimeoutMillis(readTimeout);
+        request.setConnectTimeoutMillis(connectTimeout);
+
+        if((requestId != null) && !requestId.isEmpty())
+        {
+            request.setHeaderField(REQUEST_ID, requestId);
+        }
+
+        request.setHeaderField(AUTHORIZATION, sasTokenString);
+        request.setHeaderField(USER_AGENT, TransportUtils.javaServiceClientIdentifier + TransportUtils.serviceVersion);
+        request.setHeaderField(ACCEPT, ACCEPT_VALUE);
+        request.setHeaderField(CONTENT_TYPE, ACCEPT_VALUE + "; " + ACCEPT_CHARSET);
+
+        if (headers != null)
+        {
+            for(Map.Entry<String, String> header : headers.entrySet())
+            {
+                request.setHeaderField(header.getKey(), header.getValue());
+            }
+
+            headers = null;
+        }
+
+        HttpResponse response = request.send();
+        IotHubExceptionManager.httpResponseVerification(response);
         return response;
     }
 

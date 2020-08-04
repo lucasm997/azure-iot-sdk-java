@@ -64,7 +64,6 @@ public class QueryTwinTests extends DeviceTwinCommon
         IntegrationTest.isBasicTierHub = Boolean.parseBoolean(Tools.retrieveEnvironmentVariableValue(TestConstants.IS_BASIC_TIER_HUB_ENV_VAR_NAME));
         IntegrationTest.isPullRequest = Boolean.parseBoolean(Tools.retrieveEnvironmentVariableValue(TestConstants.IS_PULL_REQUEST));
 
-        sCDeviceTwin = DeviceTwin.createFromConnectionString(iotHubConnectionString);
         registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString);
         scRawTwinQueryClient = RawTwinQuery.createFromConnectionString(iotHubConnectionString);
 
@@ -168,7 +167,7 @@ public class QueryTwinTests extends DeviceTwinCommon
             }
             devicesUnderTest[i].sCDeviceForTwin.setDesiredProperties(desiredProperties);
 
-            sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
             devicesUnderTest[i].sCDeviceForTwin.clearTwin();
         }
 
@@ -305,13 +304,13 @@ public class QueryTwinTests extends DeviceTwinCommon
         final String where = "is_defined(properties.desired." + queryProperty + ")";
         SqlQuery sqlQuery = SqlQuery.createSqlQuery("*", SqlQuery.FromType.DEVICES, where, null);
         Thread.sleep(MAXIMUM_TIME_FOR_IOTHUB_PROPAGATION_BETWEEN_DEVICE_SERVICE_CLIENTS);
-        Query twinQuery = sCDeviceTwin.queryTwin(sqlQuery.getQuery(), PAGE_SIZE);
+        Query twinQuery = testInstance.sCDeviceTwin.queryTwin(sqlQuery.getQuery(), PAGE_SIZE);
 
         for (int i = 0; i < MAX_DEVICES; i++)
         {
-            if (sCDeviceTwin.hasNextDeviceTwin(twinQuery))
+            if (testInstance.sCDeviceTwin.hasNextDeviceTwin(twinQuery))
             {
-                DeviceTwinDevice d = sCDeviceTwin.getNextDeviceTwin(twinQuery);
+                DeviceTwinDevice d = testInstance.sCDeviceTwin.getNextDeviceTwin(twinQuery);
                 assertNotNull(d.getVersion());
 
                 assertEquals(TwinConnectionState.DISCONNECTED.toString(), d.getConnectionState());
@@ -323,7 +322,7 @@ public class QueryTwinTests extends DeviceTwinCommon
                 }
             }
         }
-        assertFalse(sCDeviceTwin.hasNextDeviceTwin(twinQuery));
+        assertFalse(testInstance.sCDeviceTwin.hasNextDeviceTwin(twinQuery));
         removeMultipleDevices(MAX_DEVICES);
     }
 
@@ -362,10 +361,10 @@ public class QueryTwinTests extends DeviceTwinCommon
         long startTime = System.currentTimeMillis();
         while (continuationToken == null)
         {
-            QueryCollection twinQueryCollection = sCDeviceTwin.queryTwinCollection(sqlQuery.getQuery(), PAGE_SIZE);
+            QueryCollection twinQueryCollection = testInstance.sCDeviceTwin.queryTwinCollection(sqlQuery.getQuery(), PAGE_SIZE);
 
             // Run a query and save the continuation token for the second page of results
-            QueryCollectionResponse<DeviceTwinDevice> queryCollectionResponse = sCDeviceTwin.next(twinQueryCollection);
+            QueryCollectionResponse<DeviceTwinDevice> queryCollectionResponse = testInstance.sCDeviceTwin.next(twinQueryCollection);
             queriedDeviceTwinDeviceCollection = queryCollectionResponse.getCollection();
             continuationToken = queryCollectionResponse.getContinuationToken();
 
@@ -386,8 +385,8 @@ public class QueryTwinTests extends DeviceTwinCommon
         QueryOptions options = new QueryOptions();
         options.setContinuationToken(continuationToken);
         options.setPageSize(PAGE_SIZE);
-        QueryCollection twinQueryToReRun = sCDeviceTwin.queryTwinCollection(sqlQuery.getQuery());
-        Collection<DeviceTwinDevice> continuedDeviceTwinDeviceQuery = sCDeviceTwin.next(twinQueryToReRun, options).getCollection();
+        QueryCollection twinQueryToReRun = testInstance.sCDeviceTwin.queryTwinCollection(sqlQuery.getQuery());
+        Collection<DeviceTwinDevice> continuedDeviceTwinDeviceQuery = testInstance.sCDeviceTwin.next(twinQueryToReRun, options).getCollection();
 
         // Cleanup
         removeMultipleDevices(PAGE_SIZE + 1);
@@ -458,7 +457,7 @@ public class QueryTwinTests extends DeviceTwinCommon
             }
             devicesUnderTest[i].sCDeviceForTwin.setDesiredProperties(desiredProperties);
 
-            sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
             devicesUnderTest[i].sCDeviceForTwin.clearTwin();
         }
 
@@ -473,15 +472,15 @@ public class QueryTwinTests extends DeviceTwinCommon
                 {
                     final String where = "is_defined(properties.desired." + queryProperty + ")";
                     SqlQuery sqlQuery = SqlQuery.createSqlQuery("*", SqlQuery.FromType.DEVICES, where, null);
-                    final Query twinQuery = sCDeviceTwin.queryTwin(sqlQuery.getQuery(), PAGE_SIZE);
+                    final Query twinQuery = testInstance.sCDeviceTwin.queryTwin(sqlQuery.getQuery(), PAGE_SIZE);
 
                     for (int i = 0; i < MAX_DEVICES; i++)
                     {
                         try
                         {
-                            if (sCDeviceTwin.hasNextDeviceTwin(twinQuery))
+                            if (testInstance.sCDeviceTwin.hasNextDeviceTwin(twinQuery))
                             {
-                                DeviceTwinDevice d = sCDeviceTwin.getNextDeviceTwin(twinQuery);
+                                DeviceTwinDevice d = testInstance.sCDeviceTwin.getNextDeviceTwin(twinQuery);
 
                                 assertNotNull(d.getVersion());
                                 for (Pair dp : d.getDesiredProperties())
@@ -496,7 +495,7 @@ public class QueryTwinTests extends DeviceTwinCommon
                             fail(e.getMessage());
                         }
 
-                        assertFalse(sCDeviceTwin.hasNextDeviceTwin(twinQuery));
+                        assertFalse(testInstance.sCDeviceTwin.hasNextDeviceTwin(twinQuery));
                     }
                 }
                 catch (Exception e)
@@ -516,15 +515,15 @@ public class QueryTwinTests extends DeviceTwinCommon
                 {
                     final String whereEvenDevices = "is_defined(properties.desired." + queryPropertyEven + ")";
                     SqlQuery sqlQueryEvenDevices = SqlQuery.createSqlQuery("*", SqlQuery.FromType.DEVICES, whereEvenDevices, null);
-                    final Query twinQueryEven = sCDeviceTwin.queryTwin(sqlQueryEvenDevices.getQuery(), PAGE_SIZE);
+                    final Query twinQueryEven = testInstance.sCDeviceTwin.queryTwin(sqlQueryEvenDevices.getQuery(), PAGE_SIZE);
 
                     for (int i = 0; i < maximumEvenDevices; i++)
                     {
                         try
                         {
-                            if (sCDeviceTwin.hasNextDeviceTwin(twinQueryEven))
+                            if (testInstance.sCDeviceTwin.hasNextDeviceTwin(twinQueryEven))
                             {
-                                DeviceTwinDevice d = sCDeviceTwin.getNextDeviceTwin(twinQueryEven);
+                                DeviceTwinDevice d = testInstance.sCDeviceTwin.getNextDeviceTwin(twinQueryEven);
 
                                 assertNotNull(d.getVersion());
                                 for (Pair dp : d.getDesiredProperties())
@@ -539,7 +538,7 @@ public class QueryTwinTests extends DeviceTwinCommon
                             fail(e.getMessage());
                         }
 
-                        assertFalse(sCDeviceTwin.hasNextDeviceTwin(twinQueryEven));
+                        assertFalse(testInstance.sCDeviceTwin.hasNextDeviceTwin(twinQueryEven));
                     }
                 }
                 catch (Exception e)
@@ -565,7 +564,7 @@ public class QueryTwinTests extends DeviceTwinCommon
             desiredProperties.add(new Pair(queryProperty, queryPropertyValue));
             devicesUnderTest[i].sCDeviceForTwin.setDesiredProperties(desiredProperties);
 
-            sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
             devicesUnderTest[i].sCDeviceForTwin.clearTwin();
         }
     }

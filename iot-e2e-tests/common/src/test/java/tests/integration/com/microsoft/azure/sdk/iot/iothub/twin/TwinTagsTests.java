@@ -67,14 +67,14 @@ public class TwinTagsTests extends DeviceTwinCommon
             desiredProperties.add(new Pair(PROPERTY_KEY + i, PROPERTY_VALUE + i));
             devicesUnderTest[i].sCDeviceForTwin.setDesiredProperties(desiredProperties);
 
-            sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
             devicesUnderTest[i].sCDeviceForTwin.clearTwin();
         }
 
         // Update Tags and desired properties on multiple devices
         for (int i = 0; i < MAX_DEVICES; i++)
         {
-            sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
             Set<Pair> tags = devicesUnderTest[i].sCDeviceForTwin.getTags();
             for (Pair tag : tags)
             {
@@ -89,14 +89,14 @@ public class TwinTagsTests extends DeviceTwinCommon
             }
             devicesUnderTest[i].sCDeviceForTwin.setDesiredProperties(desiredProperties);
 
-            sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
             devicesUnderTest[i].sCDeviceForTwin.clearTwin();
         }
 
         // Read updates on multiple devices
         for (int i = 0; i < MAX_DEVICES; i++)
         {
-            sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
 
             for (Pair t : devicesUnderTest[i].sCDeviceForTwin.getTags())
             {
@@ -127,7 +127,7 @@ public class TwinTagsTests extends DeviceTwinCommon
             Set<Pair> tags = new HashSet<>();
             tags.add(new Pair(TAG_KEY + i, TAG_VALUE + i));
             devicesUnderTest[i].sCDeviceForTwin.setTags(tags);
-            sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
             Thread.sleep(DELAY_BETWEEN_OPERATIONS);
             devicesUnderTest[i].sCDeviceForTwin.clearTwin();
         }
@@ -135,7 +135,7 @@ public class TwinTagsTests extends DeviceTwinCommon
         // Read updates on multiple devices
         for (int i = 0; i < MAX_DEVICES; i++)
         {
-            sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
             Thread.sleep(DELAY_BETWEEN_OPERATIONS);
 
             for (Pair t : devicesUnderTest[i].sCDeviceForTwin.getTags())
@@ -159,28 +159,28 @@ public class TwinTagsTests extends DeviceTwinCommon
             Set<Pair> tags = new HashSet<>();
             tags.add(new Pair(TAG_KEY + i, TAG_VALUE + i));
             devicesUnderTest[i].sCDeviceForTwin.setTags(tags);
-            sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
             devicesUnderTest[i].sCDeviceForTwin.clearTwin();
         }
 
         // Update Tags on multiple devices
         for (int i = 0; i < MAX_DEVICES; i++)
         {
-            sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
             Set<Pair> tags = devicesUnderTest[i].sCDeviceForTwin.getTags();
             for (Pair tag : tags)
             {
                 tag.setValue(TAG_VALUE_UPDATE + i);
             }
             devicesUnderTest[i].sCDeviceForTwin.setTags(tags);
-            sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
             devicesUnderTest[i].sCDeviceForTwin.clearTwin();
         }
 
         // Read updates on multiple devices
         for (int i = 0; i < MAX_DEVICES; i++)
         {
-            sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
 
             for (Pair t : devicesUnderTest[i].sCDeviceForTwin.getTags())
             {
@@ -192,21 +192,21 @@ public class TwinTagsTests extends DeviceTwinCommon
         // Delete tags
         for (int i = 0; i < MAX_DEVICES; i++)
         {
-            sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
             Set<Pair> tags = devicesUnderTest[i].sCDeviceForTwin.getTags();
             for (Pair tag : tags)
             {
                 tag.setValue(null);
             }
             devicesUnderTest[i].sCDeviceForTwin.setTags(tags);
-            sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.updateTwin(devicesUnderTest[i].sCDeviceForTwin);
             devicesUnderTest[i].sCDeviceForTwin.clearTwin();
         }
 
         // Verify tags were deleted successfully
         for (int i = 0; i < MAX_DEVICES; i++)
         {
-            sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
+            testInstance.sCDeviceTwin.getTwin(devicesUnderTest[i].sCDeviceForTwin);
 
             assertEquals(buildExceptionMessage("Tags were not deleted by being set null", internalClient), 0, devicesUnderTest[i].sCDeviceForTwin.getTags().size());
         }

@@ -14,6 +14,7 @@ import com.microsoft.azure.sdk.iot.service.transport.http.HttpResponse;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -22,8 +23,8 @@ public class DeviceTwin
 {
     private IotHubConnectionString iotHubConnectionString = null;
     private Integer requestId = 0;
-    private final long USE_DEFAULT_TIMEOUT = 0;
     private final int DEFAULT_PAGE_SIZE = 100;
+    private DeviceTwinClientOptions options;
 
     /**
      * Static constructor to create instance from connection string
@@ -34,21 +35,35 @@ public class DeviceTwin
      */
     public static DeviceTwin createFromConnectionString(String connectionString) throws IOException
     {
+        return createFromConnectionString(connectionString, DeviceTwinClientOptions.builder()
+                .httpConnectTimeout(DeviceTwinClientOptions.DEFAULT_HTTP_CONNECT_TIMEOUT_MS)
+                .httpReadTimeout(DeviceTwinClientOptions.DEFAULT_HTTP_READ_TIMEOUT_MS)
+                .build());
+    }
+
+    /**
+     * Static constructor to create instance from connection string
+     *
+     * @param connectionString The iot hub connection string
+     * @param options the configurable options for each operation on this client. May not be null.
+     * @return The instance of DeviceTwin
+     * @throws IOException This exception is thrown if the object creation failed
+     */
+    public static DeviceTwin createFromConnectionString(String connectionString, DeviceTwinClientOptions options) throws IOException
+    {
         if (connectionString == null || connectionString.length() == 0)
         {
-            /*
-            **Codes_SRS_DEVICETWIN_25_001: [** The constructor shall throw IllegalArgumentException if the input string is null or empty **]**
-             */
             throw new IllegalArgumentException("Connection string cannot be null or empty");
         }
-        /*
-        **Codes_SRS_DEVICETWIN_25_003: [** The constructor shall create a new DeviceTwin instance and return it **]**
-         */
+
+        if (options == null)
+        {
+            throw new IllegalArgumentException("options cannot be null");
+        }
+
         DeviceTwin deviceTwin = new DeviceTwin();
-        /*
-        **Codes_SRS_DEVICETWIN_25_002: [** The constructor shall create an IotHubConnectionStringBuilder object from the given connection string **]**
-         */
         deviceTwin.iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
+        deviceTwin.options = options;
         return deviceTwin;
     }
 
@@ -104,7 +119,8 @@ public class DeviceTwin
          **Codes_SRS_DEVICETWIN_25_009: [** The function shall send the created request and get the response **]**
          **Codes_SRS_DEVICETWIN_25_010: [** The function shall verify the response status and throw proper Exception **]**
          */
-        HttpResponse response = DeviceOperations.request(this.iotHubConnectionString, url, HttpMethod.GET, new byte[0], String.valueOf(requestId++), USE_DEFAULT_TIMEOUT);
+        Proxy proxy = options.getProxyOptions() != null ? options.getProxyOptions().getProxy() : null;
+        HttpResponse response = DeviceOperations.request(this.iotHubConnectionString, url, HttpMethod.GET, new byte[0], String.valueOf(requestId++), options.getHttpConnectTimeout(), options.getHttpReadTimeout(), proxy);
         String twin = new String(response.getBody(), StandardCharsets.UTF_8);
 
         /*
@@ -196,7 +212,8 @@ public class DeviceTwin
 
         **Codes_SRS_DEVICETWIN_25_020: [** The function shall verify the response status and throw proper Exception **]**
          */
-        HttpResponse response = DeviceOperations.request(this.iotHubConnectionString, url, HttpMethod.PATCH, twinJson.getBytes(StandardCharsets.UTF_8), String.valueOf(requestId++),0);
+        Proxy proxy = options.getProxyOptions() != null ? options.getProxyOptions().getProxy() : null;
+        HttpResponse response = DeviceOperations.request(this.iotHubConnectionString, url, HttpMethod.PATCH, twinJson.getBytes(StandardCharsets.UTF_8), String.valueOf(requestId++),options.getHttpConnectTimeout(), options.getHttpReadTimeout(), proxy);
     }
 
     /**
@@ -266,7 +283,8 @@ public class DeviceTwin
 
         //Codes_SRS_DEVICETWIN_25_049: [ The method shall build the URL for this operation by calling getUrlTwinQuery ]
         //Codes_SRS_DEVICETWIN_25_051: [ The method shall send a Query Request to IotHub as HTTP Method Post on the query Object by calling sendQueryRequest.]
-        deviceTwinQuery.sendQueryRequest(iotHubConnectionString, iotHubConnectionString.getUrlTwinQuery(), HttpMethod.POST, USE_DEFAULT_TIMEOUT);
+        Proxy proxy = options.getProxyOptions() != null ? options.getProxyOptions().getProxy() : null;
+        deviceTwinQuery.sendQueryRequest(iotHubConnectionString, iotHubConnectionString.getUrlTwinQuery(), HttpMethod.POST, options.getHttpConnectTimeout(), options.getHttpReadTimeout(), proxy);
         return deviceTwinQuery;
     }
 
@@ -309,7 +327,8 @@ public class DeviceTwin
     public synchronized QueryCollection queryTwinCollection(String sqlQuery, Integer pageSize) throws MalformedURLException
     {
         //Codes_SRS_DEVICETWIN_34_070: [This function shall return a new QueryCollection object of type TWIN with the provided sql query and page size.]
-        return new QueryCollection(sqlQuery, pageSize, QueryType.TWIN, this.iotHubConnectionString, this.iotHubConnectionString.getUrlTwinQuery(), HttpMethod.POST, USE_DEFAULT_TIMEOUT);
+        Proxy proxy = options.getProxyOptions() != null ? options.getProxyOptions().getProxy() : null;
+        return new QueryCollection(sqlQuery, pageSize, QueryType.TWIN, this.iotHubConnectionString, this.iotHubConnectionString.getUrlTwinQuery(), HttpMethod.POST, options.getHttpConnectTimeout(), options.getHttpReadTimeout(), proxy);
     }
 
     /**

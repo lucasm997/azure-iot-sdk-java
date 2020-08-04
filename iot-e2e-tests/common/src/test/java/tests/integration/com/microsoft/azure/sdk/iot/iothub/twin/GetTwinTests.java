@@ -7,12 +7,19 @@ package tests.integration.com.microsoft.azure.sdk.iot.iothub.twin;
 
 import com.microsoft.azure.sdk.iot.device.IotHubClientProtocol;
 import com.microsoft.azure.sdk.iot.device.exceptions.ModuleClientException;
+import com.microsoft.azure.sdk.iot.service.ProxyOptions;
 import com.microsoft.azure.sdk.iot.service.auth.AuthenticationType;
+import com.microsoft.azure.sdk.iot.service.devicetwin.DeviceMethod;
+import com.microsoft.azure.sdk.iot.service.devicetwin.DeviceMethodClientOptions;
+import com.microsoft.azure.sdk.iot.service.devicetwin.DeviceTwin;
+import com.microsoft.azure.sdk.iot.service.devicetwin.DeviceTwinClientOptions;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.littleshoot.proxy.HttpProxyServer;
+import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import tests.integration.com.microsoft.azure.sdk.iot.helpers.ClientType;
 import tests.integration.com.microsoft.azure.sdk.iot.helpers.IntegrationTest;
 import tests.integration.com.microsoft.azure.sdk.iot.helpers.TestConstants;
@@ -22,6 +29,8 @@ import tests.integration.com.microsoft.azure.sdk.iot.helpers.annotations.Standar
 import tests.integration.com.microsoft.azure.sdk.iot.iothub.setup.DeviceTwinCommon;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.util.Collection;
@@ -38,16 +47,47 @@ public class GetTwinTests extends DeviceTwinCommon
         super(protocol, authenticationType, clientType, publicKeyCert, privateKey, x509Thumbprint);
     }
 
-    @Before
-    public void setUpNewDeviceAndModule() throws IOException, IotHubException, URISyntaxException, InterruptedException, ModuleClientException, GeneralSecurityException
+    @Test
+    @StandardTierHubOnlyTest
+    public void testGetDeviceTwin() throws IOException, InterruptedException, IotHubException, GeneralSecurityException, ModuleClientException, URISyntaxException
     {
         super.setUpNewDeviceAndModule();
+        super.testGetDeviceTwin();
     }
 
     @Test
     @StandardTierHubOnlyTest
-    public void testGetDeviceTwin() throws IOException, InterruptedException, IotHubException
+    public void testGetDeviceTwinWithProxy() throws IOException, InterruptedException, IotHubException, GeneralSecurityException, ModuleClientException, URISyntaxException
     {
-        super.testGetDeviceTwin();
+        if (testInstance.protocol != IotHubClientProtocol.MQTT || testInstance.authenticationType != AuthenticationType.SAS)
+        {
+            // This test doesn't really care about the device side protocol or authentication, so just run it once
+            // when the device is using MQTT with SAS auth
+            return;
+        }
+
+        super.setUpNewDeviceAndModule();
+
+        String testProxyHostname = "127.0.0.1";
+        int testProxyPort = 8894;
+        HttpProxyServer proxyServer = DefaultHttpProxyServer.bootstrap()
+                .withPort(testProxyPort)
+                .start();
+
+        try
+        {
+            Proxy serviceSideProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(testProxyHostname, testProxyPort));
+
+            ProxyOptions proxyOptions = new ProxyOptions(serviceSideProxy);
+            DeviceTwinClientOptions options = DeviceTwinClientOptions.builder().proxyOptions(proxyOptions).build();
+
+            testInstance.sCDeviceTwin = DeviceTwin.createFromConnectionString(iotHubConnectionString, options);
+
+            super.testGetDeviceTwin();
+        }
+        finally
+        {
+            proxyServer.stop();
+        }
     }
 }

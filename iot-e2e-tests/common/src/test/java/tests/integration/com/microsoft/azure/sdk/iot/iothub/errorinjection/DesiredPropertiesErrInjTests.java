@@ -562,7 +562,7 @@ public class DesiredPropertiesErrInjTests extends DeviceTwinCommon
         dp.add(p);
         deviceUnderTest.sCDeviceForTwin.setDesiredProperties(dp);
 
-        sCDeviceTwin.updateTwin(deviceUnderTest.sCDeviceForTwin);
+        testInstance.sCDeviceTwin.updateTwin(deviceUnderTest.sCDeviceForTwin);
 
         waitAndVerifyTwinStatusBecomesSuccess();
         waitAndVerifyDesiredPropertyCallback(update2Prefix, false);
