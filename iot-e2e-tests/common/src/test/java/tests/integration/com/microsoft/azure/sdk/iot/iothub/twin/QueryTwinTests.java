@@ -11,6 +11,7 @@ import com.microsoft.azure.sdk.iot.deps.twin.TwinConnectionState;
 import com.microsoft.azure.sdk.iot.device.IotHubClientProtocol;
 import com.microsoft.azure.sdk.iot.device.exceptions.ModuleClientException;
 import com.microsoft.azure.sdk.iot.service.RegistryManager;
+import com.microsoft.azure.sdk.iot.service.RegistryManagerOptions;
 import com.microsoft.azure.sdk.iot.service.auth.AuthenticationType;
 import com.microsoft.azure.sdk.iot.service.devicetwin.*;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
@@ -50,7 +51,7 @@ public class QueryTwinTests extends DeviceTwinCommon
 {
     public static final int QUERY_TIMEOUT_MILLISECONDS = 60 * 1000; // 1 minute
 
-    public QueryTwinTests(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint)
+    public QueryTwinTests(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint) throws IOException
     {
         super(protocol, authenticationType, clientType, publicKeyCert, privateKey, x509Thumbprint);
     }
@@ -64,7 +65,7 @@ public class QueryTwinTests extends DeviceTwinCommon
         IntegrationTest.isBasicTierHub = Boolean.parseBoolean(Tools.retrieveEnvironmentVariableValue(TestConstants.IS_BASIC_TIER_HUB_ENV_VAR_NAME));
         IntegrationTest.isPullRequest = Boolean.parseBoolean(Tools.retrieveEnvironmentVariableValue(TestConstants.IS_PULL_REQUEST));
 
-        registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString);
+        registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString, RegistryManagerOptions.builder().httpReadTimeout(0).build());
         scRawTwinQueryClient = RawTwinQuery.createFromConnectionString(iotHubConnectionString);
 
         List inputs = Arrays.asList(
@@ -422,7 +423,7 @@ public class QueryTwinTests extends DeviceTwinCommon
     public void queryCollectionCanReturnEmptyQueryResults() throws IOException, IotHubException
     {
         String fullQuery = "select * from devices where deviceId='nonexistantdevice'";
-        DeviceTwin twinClient = DeviceTwin.createFromConnectionString(iotHubConnectionString);
+        DeviceTwin twinClient = DeviceTwin.createFromConnectionString(iotHubConnectionString, DeviceTwinClientOptions.builder().httpReadTimeout(0).build());
         QueryCollection twinQuery = twinClient.queryTwinCollection(fullQuery);
         QueryOptions options = new QueryOptions();
         QueryCollectionResponse<DeviceTwinDevice> response = twinClient.next(twinQuery, options);

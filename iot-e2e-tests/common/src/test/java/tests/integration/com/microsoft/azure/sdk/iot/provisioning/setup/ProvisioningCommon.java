@@ -20,7 +20,9 @@ import com.microsoft.azure.sdk.iot.provisioning.service.ProvisioningServiceClien
 import com.microsoft.azure.sdk.iot.provisioning.service.configs.*;
 import com.microsoft.azure.sdk.iot.provisioning.service.exceptions.ProvisioningServiceClientException;
 import com.microsoft.azure.sdk.iot.service.RegistryManager;
+import com.microsoft.azure.sdk.iot.service.RegistryManagerOptions;
 import com.microsoft.azure.sdk.iot.service.devicetwin.DeviceTwin;
+import com.microsoft.azure.sdk.iot.service.devicetwin.DeviceTwinClientOptions;
 import com.microsoft.azure.sdk.iot.service.devicetwin.DeviceTwinDevice;
 import com.microsoft.azure.sdk.iot.service.devicetwin.Query;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
@@ -251,7 +253,7 @@ public class ProvisioningCommon extends IntegrationTest
         provisioningServiceClient =
                 ProvisioningServiceClient.createFromConnectionString(provisioningServiceConnectionString);
 
-        registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString);
+        registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString, RegistryManagerOptions.builder().httpReadTimeout(0).build());
 
         this.testInstance = new ProvisioningTestInstance(this.testInstance.protocol, this.testInstance.attestationType);
     }
@@ -451,7 +453,7 @@ public class ProvisioningCommon extends IntegrationTest
 
     protected void assertProvisionedDeviceCapabilitiesAreExpected(DeviceCapabilities expectedDeviceCapabilities, String provisionedHubConnectionString) throws IOException, IotHubException
     {
-        DeviceTwin deviceTwin = DeviceTwin.createFromConnectionString(provisionedHubConnectionString);
+        DeviceTwin deviceTwin = DeviceTwin.createFromConnectionString(provisionedHubConnectionString, DeviceTwinClientOptions.builder().httpReadTimeout(0).build());
         Query query = deviceTwin.queryTwin("SELECT * FROM devices WHERE deviceId = '" + testInstance.provisionedDeviceId +"'");
         assertTrue(CorrelationDetailsLoggingAssert.buildExceptionMessageDpsIndividualOrGroup("Provisioned device " + testInstance.provisionedDeviceId + "not found in expected hub", getHostName(provisioningServiceConnectionString), testInstance.groupId, testInstance.registrationId), deviceTwin.hasNextDeviceTwin(query));
         DeviceTwinDevice provisionedDevice = deviceTwin.getNextDeviceTwin(query);

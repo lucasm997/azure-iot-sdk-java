@@ -22,6 +22,7 @@ import tests.integration.com.microsoft.azure.sdk.iot.helpers.annotations.IotHubT
 import tests.integration.com.microsoft.azure.sdk.iot.helpers.annotations.StandardTierHubOnlyTest;
 import tests.integration.com.microsoft.azure.sdk.iot.iothub.setup.DeviceTwinCommon;
 
+import java.io.IOException;
 import java.util.*;
 
 import static com.microsoft.azure.sdk.iot.device.IotHubClientProtocol.AMQPS;
@@ -38,7 +39,7 @@ public class DesiredPropertiesErrInjTests extends DeviceTwinCommon
 {
     private JsonParser jsonParser = new JsonParser();
 
-    public DesiredPropertiesErrInjTests(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint)
+    public DesiredPropertiesErrInjTests(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint) throws IOException
     {
         super(protocol, authenticationType, clientType, publicKeyCert, privateKey, x509Thumbprint);
         jsonParser = new JsonParser();

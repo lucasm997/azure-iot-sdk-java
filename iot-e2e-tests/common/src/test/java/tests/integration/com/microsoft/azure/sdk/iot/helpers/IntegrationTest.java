@@ -53,6 +53,9 @@ public abstract class IntegrationTest
     @Rule
     public FlakeyTestRule flakeyTestRule = new FlakeyTestRule();
 
+    @Rule
+    public ThrottleResistantTestRule throttleResistantTestRule = new ThrottleResistantTestRule();
+
     int E2E_TEST_TIMEOUT_MILLISECONDS = 5 * 60 * 1000;
 
     // Each test must finish in under 5 minutes. Only the token renewal test should last longer,

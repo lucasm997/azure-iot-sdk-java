@@ -14,11 +14,9 @@ import com.microsoft.azure.sdk.iot.device.DeviceTwin.TwinPropertyCallBack;
 import com.microsoft.azure.sdk.iot.device.exceptions.ModuleClientException;
 import com.microsoft.azure.sdk.iot.device.transport.IotHubConnectionStatus;
 import com.microsoft.azure.sdk.iot.service.RegistryManager;
+import com.microsoft.azure.sdk.iot.service.RegistryManagerOptions;
 import com.microsoft.azure.sdk.iot.service.auth.AuthenticationType;
-import com.microsoft.azure.sdk.iot.service.devicetwin.DeviceTwin;
-import com.microsoft.azure.sdk.iot.service.devicetwin.DeviceTwinDevice;
-import com.microsoft.azure.sdk.iot.service.devicetwin.Pair;
-import com.microsoft.azure.sdk.iot.service.devicetwin.RawTwinQuery;
+import com.microsoft.azure.sdk.iot.service.devicetwin.*;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -59,7 +57,7 @@ public class DeviceTwinCommon extends IntegrationTest
         String privateKey = certificateGenerator.getPrivateKey();
         String x509Thumbprint = certificateGenerator.getX509Thumbprint();
 
-        registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString);
+        registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString, RegistryManagerOptions.builder().httpReadTimeout(0).build());
         scRawTwinQueryClient = RawTwinQuery.createFromConnectionString(iotHubConnectionString);
 
         List inputs = new ArrayList();
@@ -406,7 +404,7 @@ public class DeviceTwinCommon extends IntegrationTest
         }
     }
 
-    public DeviceTwinCommon(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint)
+    public DeviceTwinCommon(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint) throws IOException
     {
         this.testInstance = new DeviceTwinTestInstance(protocol, authenticationType, clientType, publicKeyCert, privateKey, x509Thumbprint);
     }
@@ -422,8 +420,7 @@ public class DeviceTwinCommon extends IntegrationTest
         public ClientType clientType;
         public DeviceTwin sCDeviceTwin;
 
-
-        public DeviceTwinTestInstance(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint)
+        public DeviceTwinTestInstance(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint) throws IOException
         {
             this.protocol = protocol;
             this.authenticationType = authenticationType;
@@ -431,17 +428,7 @@ public class DeviceTwinCommon extends IntegrationTest
             this.privateKey = privateKey;
             this.x509Thumbprint = x509Thumbprint;
             this.clientType = clientType;
-
-            try
-            {
-                this.sCDeviceTwin = DeviceTwin.createFromConnectionString(iotHubConnectionString);
-            }
-            catch (IOException e)
-            {
-                // A little odd to do this, but the createFromConnectionString call doesn't ever actually throw this exception, and
-                // this constructor shouldn't throw
-                throw new RuntimeException("Unexpected exception encountered while building device twin service client", e);
-            }
+            this.sCDeviceTwin = DeviceTwin.createFromConnectionString(iotHubConnectionString, DeviceTwinClientOptions.builder().httpReadTimeout(0).build());
         }
     }
 
@@ -450,7 +437,7 @@ public class DeviceTwinCommon extends IntegrationTest
     {
         try
         {
-            registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString);
+            registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString, RegistryManagerOptions.builder().httpReadTimeout(0).build());
             scRawTwinQueryClient = RawTwinQuery.createFromConnectionString(iotHubConnectionString);
         }
         catch (IOException e)

@@ -104,7 +104,7 @@ public class RegistryManagerTests extends IntegrationTest
         proxyServer.stop();
     }
     
-    @Test (timeout=MAX_TEST_MILLISECONDS)
+    @Test
     public void deviceLifecycle() throws Exception
     {
         //-Create-//
@@ -130,7 +130,7 @@ public class RegistryManagerTests extends IntegrationTest
         assertTrue(buildExceptionMessage("", hostName), deviceWasDeletedSuccessfully(testInstance.registryManager, testInstance.deviceId));
     }
 
-    @Test (timeout=MAX_TEST_MILLISECONDS)
+    @Test
     public void deviceLifecycleWithProxy() throws Exception
     {
         Proxy testProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(testProxyHostname, testProxyPort));
@@ -160,7 +160,7 @@ public class RegistryManagerTests extends IntegrationTest
         assertTrue(buildExceptionMessage("", hostName), deviceWasDeletedSuccessfully(testInstance.registryManager, testInstance.deviceId));
     }
 
-    @Test (timeout=MAX_TEST_MILLISECONDS)
+    @Test
     public void crud_device_e2e_X509_CA_signed() throws Exception
     {
         //-Create-//
@@ -191,7 +191,7 @@ public class RegistryManagerTests extends IntegrationTest
         assertTrue(buildExceptionMessage("", hostName), deviceWasDeletedSuccessfully(testInstance.registryManager, testInstance.deviceId));
     }
 
-    @Test (timeout=MAX_TEST_MILLISECONDS)
+    @Test
     public void crud_device_e2e_X509_self_signed() throws Exception
     {
         //-Create-//
@@ -231,11 +231,11 @@ public class RegistryManagerTests extends IntegrationTest
     public void getDeviceStatisticsTest() throws Exception
     {
         RegistryManagerTestInstance testInstance = new RegistryManagerTestInstance();
-        RegistryManager registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString);
+        RegistryManager registryManager = RegistryManager.createFromConnectionString(iotHubConnectionString, RegistryManagerOptions.builder().httpReadTimeout(0).build());
         Tools.getStatisticsWithRetry(registryManager);
     }
 
-    @Test (timeout=MAX_TEST_MILLISECONDS)
+    @Test
     @StandardTierHubOnlyTest
     public void crud_module_e2e() throws Exception
     {
@@ -272,7 +272,7 @@ public class RegistryManagerTests extends IntegrationTest
         assertTrue(buildExceptionMessage("", hostName), moduleWasDeletedSuccessfully(testInstance.registryManager, testInstance.deviceId, testInstance.moduleId));
     }
 
-    @Test (timeout=MAX_TEST_MILLISECONDS)
+    @Test
     @StandardTierHubOnlyTest
     @ContinuousIntegrationTest
     public void crud_module_e2e_X509_CA_signed() throws Exception
@@ -307,7 +307,7 @@ public class RegistryManagerTests extends IntegrationTest
         assertTrue(buildExceptionMessage("", hostName), moduleWasDeletedSuccessfully(testInstance.registryManager, testInstance.deviceId, testInstance.moduleId));
     }
 
-    @Test (timeout=MAX_TEST_MILLISECONDS)
+    @Test
     @StandardTierHubOnlyTest
     @ContinuousIntegrationTest
     public void crud_module_e2e_X509_self_signed() throws Exception
@@ -350,7 +350,7 @@ public class RegistryManagerTests extends IntegrationTest
         assertTrue(buildExceptionMessage("", hostName), moduleWasDeletedSuccessfully(testInstance.registryManager, testInstance.deviceId, testInstance.moduleId));
     }
 
-    @Test (timeout=MAX_TEST_MILLISECONDS)
+    @Test
     @StandardTierHubOnlyTest
     public void crud_adm_configuration_e2e() throws Exception
     {
@@ -417,7 +417,7 @@ public class RegistryManagerTests extends IntegrationTest
         assertTrue(buildExceptionMessage("", hostName), configWasDeletedSuccessfully(testInstance.registryManager, testInstance.configId));
     }
 
-    @Test (expected = IotHubBadFormatException.class)
+    @Test
     @StandardTierHubOnlyTest
     public void apply_configuration_e2e() throws Exception
     {
@@ -441,8 +441,19 @@ public class RegistryManagerTests extends IntegrationTest
         ConfigurationContent content = new ConfigurationContent();
         content.setDeviceContent(testDeviceContent);
 
+        boolean expectedExceptionThrown = false;
+
         // Act
-        testInstance.registryManager.applyConfigurationContentOnDevice(testInstance.deviceId, content);
+        try
+        {
+            testInstance.registryManager.applyConfigurationContentOnDevice(testInstance.deviceId, content);
+        }
+        catch (IotHubBadFormatException e)
+        {
+            expectedExceptionThrown = true;
+        }
+
+        assertTrue("Bad format exception wasn't thrown but was expected", expectedExceptionThrown);
     }
 
     @StandardTierHubOnlyTest

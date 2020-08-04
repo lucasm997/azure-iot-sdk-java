@@ -42,7 +42,7 @@ import java.util.Collection;
 @RunWith(Parameterized.class)
 public class GetTwinTests extends DeviceTwinCommon
 {
-    public GetTwinTests(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint)
+    public GetTwinTests(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint) throws IOException
     {
         super(protocol, authenticationType, clientType, publicKeyCert, privateKey, x509Thumbprint);
     }
@@ -79,7 +79,7 @@ public class GetTwinTests extends DeviceTwinCommon
             Proxy serviceSideProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(testProxyHostname, testProxyPort));
 
             ProxyOptions proxyOptions = new ProxyOptions(serviceSideProxy);
-            DeviceTwinClientOptions options = DeviceTwinClientOptions.builder().proxyOptions(proxyOptions).build();
+            DeviceTwinClientOptions options = DeviceTwinClientOptions.builder().proxyOptions(proxyOptions).httpReadTimeout(0).build();
 
             testInstance.sCDeviceTwin = DeviceTwin.createFromConnectionString(iotHubConnectionString, options);
 
