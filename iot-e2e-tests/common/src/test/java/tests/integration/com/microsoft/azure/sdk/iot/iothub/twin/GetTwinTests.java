@@ -69,7 +69,7 @@ public class GetTwinTests extends DeviceTwinCommon
         super.setUpNewDeviceAndModule();
 
         String testProxyHostname = "127.0.0.1";
-        int testProxyPort = 8894;
+        int testProxyPort = 8892;
         HttpProxyServer proxyServer = DefaultHttpProxyServer.bootstrap()
                 .withPort(testProxyPort)
                 .start();
