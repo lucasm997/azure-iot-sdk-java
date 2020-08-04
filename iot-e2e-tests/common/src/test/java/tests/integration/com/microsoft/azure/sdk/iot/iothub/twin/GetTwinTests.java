@@ -59,7 +59,7 @@ public class GetTwinTests extends DeviceTwinCommon
     @StandardTierHubOnlyTest
     public void testGetDeviceTwinWithProxy() throws IOException, InterruptedException, IotHubException, GeneralSecurityException, ModuleClientException, URISyntaxException
     {
-        if (testInstance.protocol != IotHubClientProtocol.MQTT || testInstance.authenticationType != AuthenticationType.SAS)
+        if (testInstance.protocol != IotHubClientProtocol.MQTT || testInstance.authenticationType != AuthenticationType.SAS || testInstance.clientType != ClientType.DEVICE_CLIENT)
         {
             // This test doesn't really care about the device side protocol or authentication, so just run it once
             // when the device is using MQTT with SAS auth
