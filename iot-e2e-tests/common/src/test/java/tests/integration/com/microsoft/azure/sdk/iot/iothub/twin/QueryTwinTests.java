@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class QueryTwinTests extends DeviceTwinCommon
 {
-    public static final int QUERY_TIMEOUT_MILLISECONDS = 60 * 1000; // 1 minute
+    public static final int QUERY_TIMEOUT_MILLISECONDS = 5 * 60 * 1000; // 5 minutes
 
     public QueryTwinTests(IotHubClientProtocol protocol, AuthenticationType authenticationType, ClientType clientType, String publicKeyCert, String privateKey, String x509Thumbprint) throws IOException
     {
